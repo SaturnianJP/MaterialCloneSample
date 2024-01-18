@@ -1,7 +1,7 @@
 # MaterialCloneSample
 
 使用するには
-・[NDMF](https://ndmf.nadena.dev/)
+・NDMF (https://ndmf.nadena.dev/)
 
 が必要です。
 
