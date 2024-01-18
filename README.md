@@ -1,0 +1,2 @@
+# MaterialCloneSample
+ NDMF向けスクリプトです。
