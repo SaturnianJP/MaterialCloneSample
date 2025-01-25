@@ -1,4 +1,4 @@
-#define DEBUG
+ï»¿//#define DEBUG
 
 using System.Collections.Generic;
 using nadena.dev.ndmf;
@@ -37,21 +37,19 @@ namespace satania
                     if (mat == null)
                         continue;
 
-                    //SubAsset‚Èê‡‚ÍƒXƒLƒbƒv
-                    //if (AssetDatabase.IsMainAsset(mat))
-                    //{
-                        //string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(mat));
+                    if (!dupMats.ContainsKey(mat))
+                    {
+                        Material cloned = GameObject.Instantiate(mat);
 
-                        //ƒŠƒXƒg‚ÉŠÜ‚Ü‚ê‚Ä‚È‚¢ê‡‚ÍƒŠƒXƒg‚É’Ç‰Á
-                        if (!dupMats.ContainsKey(mat))
-                        {
-                            Material cloned = GameObject.Instantiate(mat);
-                            ObjectRegistry.RegisterReplacedObject(mat, cloned);
-                            dupMats.Add(mat, cloned);
-                            AssetDatabase.AddObjectToAsset(cloned, ctx.AssetContainer);
-                        }
-                        newMats[i] = dupMats[mat];
-                    //}
+                        //NDMFå´ã«å¤‰æ›´ã—ãŸã“ã¨ã‚’ç™»éŒ²
+                        ObjectRegistry.RegisterReplacedObject(mat, cloned);
+
+                        dupMats.Add(mat, cloned);
+
+                        //NDMFã®Assetã‚³ãƒ³ãƒ†ãƒŠã«è¿½åŠ 
+                        AssetDatabase.AddObjectToAsset(cloned, ctx.AssetContainer);
+                    }
+                    newMats[i] = dupMats[mat];
                 }
                 renderers[j].sharedMaterials = newMats;
                 EditorUtility.SetDirty(renderers[j]);
@@ -67,10 +65,14 @@ namespace satania
                 .BeforePlugin(AvatarOptimizerQualifiedName)
                 .Run("Material Clone Process", ctx =>
                 {
-                    #region ƒRƒ“ƒ|[ƒlƒ“ƒg‚ª”í‚Á‚Ä‚½‚çíœ
                     MaterialCloneSample[] comps = ctx.AvatarRootObject.GetComponentsInChildren<MaterialCloneSample>();
-                    MaterialCloneSample comp = comps[0];
+                    MaterialCloneSample comp = comps.Length > 0 ? comps[0] : null;
 
+                    //ã‚¢ãƒã‚¿ãƒ¼å†…ã«CloneSampleãŒãªã‹ã£ãŸã‚‰è¿”ã™
+                    if (comp == null)
+                        return;
+
+                    //2å€‹ä»¥ä¸Šã‚ã‚‹å ´åˆã¯å‰Šé™¤
                     if (comps.Length > 1)
                     {
                         for (int i = 1; i < comps.Length; i++)
@@ -81,21 +83,18 @@ namespace satania
                             GameObject.DestroyImmediate(comps[i]);
                         }
                     }
-                    #endregion
 
-                    #region ƒƒCƒ“ˆ—
                     if (comp != null)
                     {
                         SkinnedMeshRenderer[] skinnedMeshs = ctx.AvatarRootObject.GetComponentsInChildren<SkinnedMeshRenderer>();
 
-                        //ƒ}ƒeƒŠƒAƒ‹‚ğ•¡»‚µ‚Äƒ‰ƒCƒg‚Ìİ’è‚ğã‘‚«
+                        //ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’è¤‡è£½ã—ã¦ãƒ©ã‚¤ãƒˆã®è¨­å®šã‚’ä¸Šæ›¸ã
                         if (DuplicateMaterials(ctx, skinnedMeshs, out Dictionary<Material, Material> mats))
                         {
-                            //•¡»‚µ‚½ƒ}ƒeƒŠƒAƒ‹‚É‘Î‚µ‚Ä‰½‚©‚µ‚ç‚Ì•ÏXˆ—
+                            //è¤‡è£½ã—ãŸãƒãƒ†ãƒªã‚¢ãƒ«ã«å¯¾ã—ã¦ä½•ã‹ã—ã‚‰ã®å¤‰æ›´å‡¦ç†
                         }
                         GameObject.DestroyImmediate(comp);
                     }
-                    #endregion
                 });
         }
     }
